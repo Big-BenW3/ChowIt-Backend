@@ -1,0 +1,32 @@
+-- Rollback for 0000_productive_argent.sql. Drops the V1 ChowIt tables.
+-- Run only to undo the initial migration on a database with no data to keep.
+DROP TABLE IF EXISTS "idempotency_records" CASCADE;
+DROP TABLE IF EXISTS "notifications" CASCADE;
+DROP TABLE IF EXISTS "support_tickets" CASCADE;
+DROP TABLE IF EXISTS "reviews" CASCADE;
+DROP TABLE IF EXISTS "wallet_entries" CASCADE;
+DROP TABLE IF EXISTS "gift_cards" CASCADE;
+DROP TABLE IF EXISTS "referrals" CASCADE;
+DROP TABLE IF EXISTS "customer_vouchers" CASCADE;
+DROP TABLE IF EXISTS "vouchers" CASCADE;
+DROP TABLE IF EXISTS "payment_attempts" CASCADE;
+DROP TABLE IF EXISTS "order_status_events" CASCADE;
+DROP TABLE IF EXISTS "order_items" CASCADE;
+DROP TABLE IF EXISTS "orders" CASCADE;
+DROP TABLE IF EXISTS "checkout_quotes" CASCADE;
+DROP TABLE IF EXISTS "cart_items" CASCADE;
+DROP TABLE IF EXISTS "carts" CASCADE;
+DROP TABLE IF EXISTS "menu_addons" CASCADE;
+DROP TABLE IF EXISTS "menu_options" CASCADE;
+DROP TABLE IF EXISTS "menu_option_groups" CASCADE;
+DROP TABLE IF EXISTS "menu_items" CASCADE;
+DROP TABLE IF EXISTS "menu_categories" CASCADE;
+DROP TABLE IF EXISTS "restaurant_categories" CASCADE;
+DROP TABLE IF EXISTS "restaurant_hours" CASCADE;
+DROP TABLE IF EXISTS "restaurants" CASCADE;
+DROP TABLE IF EXISTS "categories" CASCADE;
+DROP TABLE IF EXISTS "banners" CASCADE;
+DROP TABLE IF EXISTS "addresses" CASCADE;
+DROP TABLE IF EXISTS "phone_verification_codes" CASCADE;
+DROP TABLE IF EXISTS "customer_sessions" CASCADE;
+DROP TABLE IF EXISTS "customers" CASCADE;
