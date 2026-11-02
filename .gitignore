@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.*.local
+!.env.example
+.npm-cache/
+.tmp-vitest/
+coverage/
+*.log
+.DS_Store
+*.sqlite
