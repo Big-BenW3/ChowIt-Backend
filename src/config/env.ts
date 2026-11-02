@@ -14,6 +14,10 @@ function num(value: string | undefined, fallback: number): number {
 }
 
 export function loadEnv(): Env {
+  const appEnv = process.env.APP_ENV ?? 'development';
+  if (appEnv === 'production' && !process.env.OTP_CODE) {
+    throw new Error('OTP_CODE must be set in production.');
+  }
   const origins = (process.env.API_CORS_ORIGINS ?? '')
     .split(',')
     .map((s) => s.trim())
@@ -21,7 +25,7 @@ export function loadEnv(): Env {
   return {
     port: num(process.env.PORT, 4000),
     host: process.env.HOST ?? '0.0.0.0',
-    appEnv: process.env.APP_ENV ?? 'development',
+    appEnv,
     corsOrigins: origins,
     paymentMode: process.env.PAYMENT_MODE === 'live' ? 'live' : 'mock',
     otpCode: process.env.OTP_CODE ?? '123456',

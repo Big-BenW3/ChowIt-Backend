@@ -41,6 +41,21 @@ rewrites), so it is safe to run against a fresh database. Rollback is
 is no data to keep. Seeding is a separate explicit step (`npm run seed`
 prints the catalogue; inserting it is not done by migrate).
 
+## Deploy to Render
+
+The repo ships a [render.yaml](./render.yaml) Blueprint:
+
+- Build: `npm ci && npm run build` (emits `dist/`, excluded from git).
+- Migrate: `npm run db:migrate` runs as the pre-deploy command.
+- Start: `npm start` (binds `0.0.0.0:$PORT`, health check `GET /health/live`).
+- Node pinned to 24 via `engines`.
+
+Set these env vars in the Render dashboard (never commit them):
+`DATABASE_URL`, `OTP_CODE` (required in production, the server refuses to
+boot without it), `API_CORS_ORIGINS`, `PAYMENT_MODE=mock`,
+`SESSION_TTL_HOURS`. Keep `PAYMENT_MODE=mock` until a real provider adapter
+lands; the app shows the demo-payment label while mock mode is on.
+
 Copy `.env.example` to `.env` and set `PAYMENT_MODE=mock` for the demo.
 In live mode the mock-complete route returns `MOCK_PAYMENT_DISABLED`.
 

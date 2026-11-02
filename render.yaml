@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: chowit-api
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npm run db:migrate
+    startCommand: npm start
+    healthCheckPath: /health/live
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: PAYMENT_MODE
+        value: mock
+      - key: SESSION_TTL_HOURS
+        value: "720"
+      - key: API_CORS_ORIGINS
+        sync: false
+      - key: OTP_CODE
+        sync: false
+      - key: DATABASE_URL
+        sync: false

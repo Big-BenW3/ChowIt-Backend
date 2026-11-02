@@ -16,7 +16,7 @@ import { ApiError } from './shared/errors.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const env = loadEnv();
-  const app = Fastify({ logger: false, genReqId: () => `req_${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}` });
+  const app = Fastify({ logger: false, trustProxy: true, genReqId: () => `req_${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)}` });
   resetStore();
   await registerSecurity(app, env);
 
