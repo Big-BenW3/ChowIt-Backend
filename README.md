@@ -1,68 +1,195 @@
-# ChowIt API (V1)
+# ChowIt API
 
-Fastify 5 + TypeScript modular monolith for the ChowIt customer app.
-Payments are mocked: the app shows a demo label and no money moves.
+Fastify + TypeScript service for the ChowIt customer product. The codebase is organized as a modular monolith with mock payment behavior for demo flows, structured validation, and a seeded in-memory store that can be swapped for Postgres-backed persistence.
 
-## Layout
+## What this backend does
 
-- `src/app.ts` — builds the Fastify instance and registers modules.
-- `src/server.ts` — listens on `PORT`.
-- `src/config/env.ts` — environment loading (`PAYMENT_MODE=mock|live`).
-- `src/plugins/security.ts` — helmet, CORS, rate limits, OpenAPI docs.
-- `src/shared/` — errors, sanitisation, money (integer kobo), sessions, idempotency.
-- `src/database/seed.ts` — demo catalogue: 4 banners, 10 categories,
-  10 restaurants, 40 menu items with options/add-ons, vouchers, FAQs, legal.
-- `src/database/store.ts` — in-memory store seeded from `seed.ts`.
-  Swap the repository functions for Drizzle/PostgreSQL without changing routes.
-- `src/modules/` — health, auth, addresses, discovery, cart, checkout,
-  payments, profile, content, admin.
-- `test/` — maintained Vitest suite (auth, cart, checkout, payments).
+This API powers the customer journey for ChowIt:
 
-## Run
+- account creation and OTP sign-in
+- saved addresses and delivery coverage
+- restaurant discovery, search, and menus
+- cart management and quoted checkout totals
+- order creation and lifecycle tracking
+- mock payment attempts and receipts
+- vouchers, gift cards, referral data, and content
+- admin operations for order status and menu availability
 
-```sh
+The service is intentionally built for a demo environment with `PAYMENT_MODE=mock` by default. In mock mode the app exposes a demo payment label instead of making real money movements.
+
+## Stack
+
+- Node.js 24
+- TypeScript
+- Fastify 5
+- Drizzle ORM + Neon Postgres support
+- Vitest for API tests
+- Argon2id password hashing
+- TypeBox schema validation
+
+## Architecture
+
+The application is split into a small set of clear layers:
+
+- `src/app.ts` — creates the Fastify app, registers security plugins, installs route modules, and defines the shared error envelope.
+- `src/server.ts` — boots the app and binds it to the configured port.
+- `src/config/env.ts` — loads environment variables and validates required runtime settings.
+- `src/plugins/security.ts` — configures Helmet, CORS, rate limits, and OpenAPI docs.
+- `src/database/store.ts` — stores the live data model and is seeded from the catalog definitions.
+- `src/database/seed.ts` — creates the demo catalogue used for discovery, pricing, and content.
+- `src/modules/` — feature routes for auth, profile, discovery, cart, checkout, payments, content, and admin.
+- `src/shared/` — reusable auth, money, validation, sanitization, errors, and idempotency helpers.
+
+## Feature areas
+
+### Auth and profiles
+
+- customer registration and phone verification
+- OTP resend and login
+- password reset flow
+- current customer session lookup
+- preferences, referrals, wallet summary, gift-card state, and vouchers
+
+### Discovery and ordering
+
+- home feed with banners and category data
+- restaurant listing, filtering, and detail views
+- menu items with option groups and add-ons
+- search and recommendations
+- cart pricing and order quote generation
+
+### Checkout and payments
+
+- server-side quote calculation with subtotal, delivery fee, discount, and total
+- order creation from quote
+- payment-attempt tracking with mock completion route
+- idempotency keys to prevent duplicate order/payment writes
+
+### Content and support
+
+- FAQ content and legal pages
+- support ticket creation and retrieval
+- notifications and push token registration
+- staff/admin operations for status changes and menu availability
+
+## Project layout
+
+```text
+BACKEND/
+├── src/
+│   ├── app.ts
+│   ├── server.ts
+│   ├── config/
+│   ├── database/
+│   ├── modules/
+│   ├── plugins/
+│   └── shared/
+├── test/
+├── drizzle/
+├── docs/
+├── package.json
+├── tsconfig.json
+├── tsconfig.build.json
+├── drizzle.config.ts
+├── vitest.config.ts
+├── render.yaml
+├── README.md
+└── .env.example
+```
+
+## Local setup
+
+From `BACKEND/`:
+
+```bash
 npm ci
-npm run dev      # http://localhost:4000, docs at /docs
-npm test
-npm run seed     # prints the demo-data summary used for DB population
+cp .env.example .env
+npm run dev
 ```
 
-## Database (Neon Postgres)
+By default the app runs on:
 
-```sh
-npm run db:generate      # regenerate ./drizzle/*.sql from src/database/schema.ts
-npm run db:migrate       # apply pending SQL to DATABASE_URL from .env
-npm run db:migrate:http  # same migration over Neon's HTTPS API (restricted networks)
+- `http://localhost:4000`
+- Swagger docs at `http://localhost:4000/docs`
+
+## Required environment variables
+
+Create a `.env` file with at least:
+
+```bash
+DATABASE_URL=postgresql://...
+OTP_CODE=123456
+PAYMENT_MODE=mock
+SESSION_TTL_HOURS=168
+API_CORS_ORIGINS=http://localhost:3000,http://localhost:8080
 ```
 
-The first migration is additive only (CREATE TABLE / INDEX, no drops or
-rewrites), so it is safe to run against a fresh database. Rollback is
-`drizzle/0000_down.sql`, which drops the V1 tables; run it only when there
-is no data to keep. Seeding is a separate explicit step (`npm run seed`
-prints the catalogue; inserting it is not done by migrate).
+Runtime notes:
 
-## Deploy to Render
+- `OTP_CODE` is required in production and the server refuses to start without it.
+- `PAYMENT_MODE` supports `mock` and `live`.
+- `API_CORS_ORIGINS` should be a comma-separated allowlist.
 
-The repo ships a [render.yaml](./render.yaml) Blueprint:
+## Scripts
 
-- Build: `npm ci && npm run build` (emits `dist/`, excluded from git).
-- Migrate: `npm run db:migrate` runs as the pre-deploy command.
-- Start: `npm start` (binds `0.0.0.0:$PORT`, health check `GET /health/live`).
-- Node pinned to 24 via `engines`.
+```bash
+npm run dev            # start the API in dev mode
+npm run build          # compile TypeScript to dist/
+npm run start          # run compiled server
+npm run lint           # type-check the project
+npm test               # run Vitest suite
+npm run seed           # print the demo-data summary used for DB population
+npm run db:generate    # generate Drizzle SQL from schema
+npm run db:migrate     # apply pending migrations to DATABASE_URL
+npm run db:migrate:http # apply migrations through Neon's HTTPS API
+```
 
-Set these env vars in the Render dashboard (never commit them):
-`DATABASE_URL`, `OTP_CODE` (required in production, the server refuses to
-boot without it), `API_CORS_ORIGINS`, `PAYMENT_MODE=mock`,
-`SESSION_TTL_HOURS`. Keep `PAYMENT_MODE=mock` until a real provider adapter
-lands; the app shows the demo-payment label while mock mode is on.
+## Database and migrations
 
-Copy `.env.example` to `.env` and set `PAYMENT_MODE=mock` for the demo.
-In live mode the mock-complete route returns `MOCK_PAYMENT_DISABLED`.
+This project is designed to work with Neon Postgres, but it also supports a local in-memory store for the demo catalogue.
+
+The first migration in `drizzle/0000_*` is additive only. It creates tables and indexes without destructive changes. The rollback SQL file (`drizzle/0000_down.sql`) drops the V1 tables and should only be used when the data is disposable.
+
+Important behavior:
+
+- migrations are explicit and separate from seeding
+- seeding is not triggered automatically by migration
+- `npm run seed` prints the catalogue shape that can be moved into a real database population step
+
+## Deployment
+
+The repository includes a Render Blueprint in `render.yaml`.
+
+Default deployment behavior:
+
+- build: `npm ci && npm run build`
+- migrate: `npm run db:migrate`
+- start: `npm start`
+- health checks target `GET /health/live`
+
+The Render dashboard should set the same environment values listed above, especially `DATABASE_URL`, `OTP_CODE`, `API_CORS_ORIGINS`, `PAYMENT_MODE`, and `SESSION_TTL_HOURS`.
 
 ## Security notes
 
-- Argon2id password hashes, opaque sessions stored as SHA-256 hashes.
-- Bearer auth on customer routes, ownership checks on every resource.
-- JSON Schema validation, string sanitisation, explicit CORS origins.
-- Rate limits on auth/OTP/search; idempotency keys on orders and payments.
-- Structured error envelope; no hashes or tokens leak in responses.
+The backend includes several guardrails for a customer API:
+
+- Argon2id password hashing
+- opaque session tokens stored as SHA-256 hashes
+- bearer-auth checks for protected routes
+- ownership validation before mutating customer-owned resources
+- schema validation and sanitization on inbound data
+- explicit CORS origins and rate limits
+- idempotency keys for write-heavy endpoints
+- consistent structured error payloads with request IDs
+
+## API documentation
+
+More detail is available in:
+
+- `docs/API_ENDPOINTS.md` — route-by-route endpoint reference
+- `docs/V1_FEATURES.md` — feature scope and product assumptions
+- `docs/v2/` — follow-up version notes for dark mode, biometric auth, favorites, wallet, payments, OTP, and push notifications
+
+## Status
+
+This repo is a working V1 backend for a food-ordering app demo, with mock payments enabled by default and a modular structure ready for a real persistence layer or production payment provider.
