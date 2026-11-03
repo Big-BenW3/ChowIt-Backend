@@ -1,10 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
+// Identity: register → OTP verify → login/logout, plus password reset.
+// Login and OTP routes carry stricter per-route rate limits (see below)
+// because they are the brute-force targets.
 import { hashPassword, verifyPassword, newSessionToken, newId, hashToken } from '../shared/auth.js';
 import { ApiError, badRequest, conflict, notFound, unauthorized } from '../shared/errors.js';
 import { cleanText, normalizePhone, normalizeUsername } from '../shared/sanitize.js';
 import { requireCustomer, envelope } from '../shared/context.js';
 import { db, resetStore, type Customer } from '../database/store.js';
+import { authRateLimit, otpRateLimit } from '../plugins/security.js';
 import { loadSeed } from '../database/seed.js';
 import type { Env } from '../config/env.js';
 
@@ -33,7 +37,10 @@ export async function authRoutes(app: FastifyInstance, env: Env): Promise<void> 
     }),
   };
 
-  app.post('/api/v1/auth/register', { schema: registerSchema }, async (request) => {
+  app.post(
+    '/api/v1/auth/register',
+    { schema: registerSchema, config: { rateLimit: authRateLimit } },
+    async (request) => {
     const body = request.body as { phone: string; fullName: string; username: string; password: string };
     const phone = normalizePhone(body.phone);
     const fullName = cleanText(body.fullName, 80);
@@ -63,7 +70,10 @@ export async function authRoutes(app: FastifyInstance, env: Env): Promise<void> 
     return envelope({ ...publicCustomer(customer), verificationRequired: true, maskedPhone: phone.slice(0, 7) + '****' });
   });
 
-  app.post('/api/v1/auth/verify-phone', async (request) => {
+  app.post(
+    '/api/v1/auth/verify-phone',
+    { config: { rateLimit: otpRateLimit } },
+    async (request) => {
     const body = request.body as { phone?: string; code?: string };
     const phone = normalizePhone(String(body.phone ?? ''));
     const code = cleanText(body.code, 10);
@@ -82,7 +92,10 @@ export async function authRoutes(app: FastifyInstance, env: Env): Promise<void> 
     return envelope({ verified: true });
   });
 
-  app.post('/api/v1/auth/resend-otp', async (request) => {
+  app.post(
+    '/api/v1/auth/resend-otp',
+    { config: { rateLimit: otpRateLimit } },
+    async (request) => {
     const body = request.body as { phone?: string };
     const phone = normalizePhone(String(body.phone ?? ''));
     if (!phone) throw badRequest('VALIDATION_ERROR', 'Enter a valid phone number.');
@@ -90,7 +103,10 @@ export async function authRoutes(app: FastifyInstance, env: Env): Promise<void> 
     return envelope({ sent: true, maskedPhone: phone.slice(0, 7) + '****' });
   });
 
-  app.post('/api/v1/auth/login', async (request) => {
+  app.post(
+    '/api/v1/auth/login',
+    { config: { rateLimit: authRateLimit } },
+    async (request) => {
     const body = request.body as { phone?: string; password?: string };
     const phone = normalizePhone(String(body.phone ?? ''));
     if (!phone) throw badRequest('VALIDATION_ERROR', 'Enter a valid phone number.');
@@ -121,7 +137,10 @@ export async function authRoutes(app: FastifyInstance, env: Env): Promise<void> 
     return envelope({ ...publicCustomer(customer), addressSetupComplete: addresses.length > 0 });
   });
 
-  app.post('/api/v1/auth/password/forgot', async (request) => {
+  app.post(
+    '/api/v1/auth/password/forgot',
+    { config: { rateLimit: otpRateLimit } },
+    async (request) => {
     const body = request.body as { phone?: string };
     const phone = normalizePhone(String(body.phone ?? ''));
     if (!phone) throw badRequest('VALIDATION_ERROR', 'Enter a valid phone number.');
@@ -129,7 +148,10 @@ export async function authRoutes(app: FastifyInstance, env: Env): Promise<void> 
     return envelope({ sent: true });
   });
 
-  app.post('/api/v1/auth/password/reset', async (request) => {
+  app.post(
+    '/api/v1/auth/password/reset',
+    { config: { rateLimit: otpRateLimit } },
+    async (request) => {
     const body = request.body as { phone?: string; code?: string; newPassword?: string };
     const phone = normalizePhone(String(body.phone ?? ''));
     const record = phone ? db.otps.get(phone) : undefined;

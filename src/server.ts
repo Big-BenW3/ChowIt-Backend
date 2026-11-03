@@ -1,3 +1,5 @@
+// Production entrypoint: binds 0.0.0.0:$PORT from the environment.
+// Render injects PORT and probes /health/live.
 import { buildApp } from './app.js';
 import { loadEnv } from './config/env.js';
 

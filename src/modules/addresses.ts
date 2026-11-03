@@ -3,6 +3,8 @@ import { newId } from '../shared/auth.js';
 import { badRequest, forbidden, notFound } from '../shared/errors.js';
 import { cleanText, normalizePhone } from '../shared/sanitize.js';
 import { requireCustomer, envelope } from '../shared/context.js';
+// Saved delivery addresses. The first address becomes default; the
+// default cannot be deleted while an active order depends on it.
 import { db, type Address } from '../database/store.js';
 
 function readAddress(body: Record<string, unknown>): Omit<Address, 'id' | 'customerId'> {

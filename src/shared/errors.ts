@@ -1,3 +1,5 @@
+// Stable machine-readable error codes. The mobile app keys its messages
+// off `code`, so never rename one without updating Flutter too.
 export type ErrorCode =
   | 'VALIDATION_ERROR'
   | 'UNAUTHENTICATED'

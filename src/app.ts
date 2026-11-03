@@ -1,3 +1,6 @@
+// Builds the Fastify instance: security plugins, error envelope, then one
+// module per product area. trustProxy is on so rate limits see the real
+// client IP behind Render's proxy.
 import Fastify, { type FastifyInstance } from 'fastify';
 import { loadEnv } from './config/env.js';
 import { registerSecurity } from './plugins/security.js';
@@ -29,6 +32,23 @@ export async function buildApp(): Promise<FastifyInstance> {
     if ((error as { validation?: unknown }).validation) {
       return reply.status(400).send({
         error: { code: 'VALIDATION_ERROR', message: 'Some details need your attention.', requestId: request.id },
+      });
+    }
+    // Framework and plugin errors (rate limits, oversized bodies) carry
+    // their own status. Keep the envelope instead of flattening to 500.
+    const httpError = error as { statusCode?: unknown; message?: unknown };
+    if (typeof httpError.statusCode === 'number' && httpError.statusCode >= 400 && httpError.statusCode < 600) {
+      const limited = httpError.statusCode === 429;
+      return reply.status(httpError.statusCode).send({
+        error: {
+          code: limited ? 'RATE_LIMITED' : 'VALIDATION_ERROR',
+          message: limited
+            ? 'Too many attempts. Slow down and try again.'
+            : typeof httpError.message === 'string'
+              ? httpError.message
+              : 'Something went wrong. Try again.',
+          requestId: request.id,
+        },
       });
     }
     request.log?.error?.(error);

@@ -1,3 +1,6 @@
+// Passwords use Argon2id; sessions are opaque random tokens stored only
+// as SHA-256 hashes, so a database leak reveals neither passwords nor
+// usable session tokens.
 import { hash, verify } from '@node-rs/argon2';
 import { randomBytes, createHash } from 'node:crypto';
 

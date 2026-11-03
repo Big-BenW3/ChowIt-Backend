@@ -1,4 +1,7 @@
-// ChowIt demo seed catalogue. All money is integer kobo (₦1 = 100 kobo).
+// ChowIt demo seed catalogue: 10 restaurants, 40 meals with options and
+// add-ons, vouchers, FAQs, and legal texts. All money is integer kobo.
+// `npm run seed` prints the counts; nothing here touches the database.
+// Images are deterministic placeholders, not licensed food photography.
 // Images use deterministic picsum seeds so the demo renders without
 // committing third-party photos. Replace with licensed photos later.
 
@@ -140,9 +143,21 @@ const FAQS = [
 ];
 
 const LEGAL = [
-  { id: 'legal_terms', documentType: 'terms', title: 'Terms of service', version: 'v0.1.0', body: 'ChowIt demo terms. Use the app for lawful food ordering.' },
-  { id: 'legal_privacy', documentType: 'privacy', title: 'Privacy policy', version: 'v0.1.0', body: 'We store your profile, addresses and orders to run the service.' },
-  { id: 'legal_delivery', documentType: 'delivery', title: 'Delivery and cancellation policy', version: 'v0.1.0', body: 'Cancel before preparation starts. Fees follow the checkout quote.' },
+  { id: 'legal_terms', documentType: 'terms', title: 'Terms of service', version: 'v0.1.0', body: 'ChowIt demo terms. Use the app for lawful food ordering. Menu photos, prices, and availability belong to the listed restaurants and can change without notice. Demo payments move no real money.' },
+  {
+    id: 'legal_privacy',
+    documentType: 'privacy',
+    title: 'Privacy policy',
+    version: 'v0.1.0',
+    body: [
+      'We collect only what food ordering needs: your name, username, phone number, delivery addresses, orders, and support messages. We never ask for card numbers, bank passwords, PINs, or OTPs beyond the verification code itself.',
+      'Passwords are stored as one-way hashes and sessions as hashes too, so neither can be read back. Prices and totals are calculated on our servers; your phone only sends meal choices.',
+      'We use your data to run the service: sign you in, deliver food, show order history, and answer support requests. We do not sell personal data or use it for unrelated advertising.',
+      'Order records are kept for accounting and support; you can ask for a copy or deletion of your account data through Get help. Verification codes expire after 10 minutes and sessions expire when you log out on all devices.',
+      'Questions about your data: raise a support ticket in the app under Get help and choose the privacy topic.',
+    ].join('\n\n'),
+  },
+  { id: 'legal_delivery', documentType: 'delivery', title: 'Delivery and cancellation policy', version: 'v0.1.0', body: 'Cancel free of charge while your order is still pending payment or confirmed. Once the kitchen starts preparing, cancellation is no longer available. Delivery fees follow the checkout quote confirmed before payment.' },
 ];
 
 function slugify(text: string): string {

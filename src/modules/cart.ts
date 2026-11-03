@@ -3,6 +3,8 @@ import { newId } from '../shared/auth.js';
 import { ApiError, badRequest, notFound } from '../shared/errors.js';
 import { cleanText } from '../shared/sanitize.js';
 import { requireCustomer, envelope } from '../shared/context.js';
+// One cart per customer, one restaurant per cart. Clients send only ids,
+// quantities, and notes; every amount in the response is recomputed here.
 import { db, priceMenuItem, cartSubtotal, type Cart } from '../database/store.js';
 
 function presentCart(cart: Cart): Record<string, unknown> {

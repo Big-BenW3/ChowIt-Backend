@@ -5,6 +5,9 @@ import { cleanText } from '../shared/sanitize.js';
 import { requireCustomer, envelope } from '../shared/context.js';
 import { db } from '../database/store.js';
 
+// Self-service profile: wallet (coming soon), referrals, vouchers,
+// gift cards, and preferences. Gift-card purchase stays disabled until
+// real issuance exists.
 export async function profileRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/v1/wallet', async (request) => {
     requireCustomer(request);

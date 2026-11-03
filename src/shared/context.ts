@@ -1,3 +1,5 @@
+// Per-request customer resolution from the Bearer token. Every
+// customer-owned route calls requireCustomer first, then filters by its id.
 import type { FastifyRequest } from 'fastify';
 import { hashToken } from '../shared/auth.js';
 import { unauthorized } from '../shared/errors.js';

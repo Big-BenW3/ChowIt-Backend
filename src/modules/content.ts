@@ -6,6 +6,8 @@ import { requireCustomer, envelope } from '../shared/context.js';
 import { db } from '../database/store.js';
 import { loadSeed } from '../database/seed.js';
 
+// Public content (FAQs, legal) plus the customer's own support tickets
+// and notifications. Support replies arrive through ticket status.
 export async function contentRoutes(app: FastifyInstance): Promise<void> {
   const seed = loadSeed();
 

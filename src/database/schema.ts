@@ -1,4 +1,7 @@
-// ChowIt Postgres schema (Drizzle). All money is integer kobo.
+// ChowIt Postgres schema (Drizzle): the durable twin of the in-memory
+// store. All money is integer kobo; customers/orders/payments reference
+// each other with foreign keys, and idempotency has a unique triple.
+// Generate SQL with `npm run db:generate`, apply with `npm run db:migrate`.
 // Generate SQL with `npm run db:generate`, apply with `npm run db:migrate`.
 import {
   boolean,

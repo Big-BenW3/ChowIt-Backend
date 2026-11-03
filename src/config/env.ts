@@ -1,3 +1,5 @@
+// Public (non-secret) configuration. Secrets live only in .env / the
+// hosting dashboard: DATABASE_URL, OTP_CODE, API_CORS_ORIGINS.
 export interface Env {
   port: number;
   host: string;

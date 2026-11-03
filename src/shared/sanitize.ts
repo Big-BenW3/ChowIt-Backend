@@ -1,5 +1,6 @@
-// Input sanitisation helpers. Every route trims strings and strips
-// control/HTML content before validation or storage.
+// Input sanitisation runs before validation on every route: trim, strip
+// control characters and HTML, cap length. Nigerian 0-prefixed numbers
+// are normalised to +234 E.164.
 
 const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 const HTML_TAG = /<[^>]*>/g;

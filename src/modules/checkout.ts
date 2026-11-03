@@ -6,6 +6,9 @@ import { requireCustomer, envelope } from '../shared/context.js';
 import { getIdem, hashRequest, idemKey, setIdem } from '../shared/idempotency.js';
 import { db, priceMenuItem, type Order, type Quote } from '../database/store.js';
 
+// Checkout: expiring server-side quotes, then idempotent order creation.
+// Quotes live 15 minutes; orders snapshot prices so later menu edits never
+// rewrite history.
 const QUOTE_TTL_MS = 15 * 60 * 1000;
 const TRANSITIONS: Record<string, string[]> = {
   pending_payment: ['confirmed', 'payment_failed', 'cancelled'],

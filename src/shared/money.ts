@@ -1,4 +1,5 @@
-// Money is always integer kobo. Never use floats for money.
+// Money is always integer kobo (₦1 = 100). Floats are banned here because
+// 0.1 + 0.2 !== 0.3 would silently misprice orders.
 export const KOBO_PER_NAIRA = 100;
 
 export function formatNgn(kobo: number): string {

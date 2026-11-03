@@ -7,6 +7,9 @@ import { getIdem, hashRequest, idemKey, setIdem } from '../shared/idempotency.js
 import { db, type Payment } from '../database/store.js';
 import type { Env } from '../config/env.js';
 
+// Demo payments only. mock-complete refuses to run unless
+// PAYMENT_MODE=mock; in live mode completions must arrive via verified
+// provider webhooks (see docs/v2/V2_PAYMENTS_OTP.md).
 const METHODS = ['CARD', 'BANK_TRANSFER', 'USSD'];
 
 export async function paymentRoutes(app: FastifyInstance, env: Env): Promise<void> {

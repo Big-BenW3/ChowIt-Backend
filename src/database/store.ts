@@ -1,3 +1,5 @@
+// In-memory database for V1. priceMenuItem is the single source of truth
+// for prices: the client never sends amounts, only item/option/add-on ids.
 import { loadSeed } from './seed.js';
 
 export interface Customer {

@@ -4,6 +4,9 @@ import { cleanText } from '../shared/sanitize.js';
 import { requireCustomer, envelope } from '../shared/context.js';
 import { db } from '../database/store.js';
 
+// Staff-only operations. Access is gated by STAFF_PHONES allow-list; every
+// status change is audited in order_status_events. Customers can never set
+// their own order status.
 const STAFF_PHONES = (process.env.STAFF_PHONES ?? '').split(',').map((s) => s.trim()).filter(Boolean);
 
 export async function adminRoutes(app: FastifyInstance): Promise<void> {

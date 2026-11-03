@@ -4,6 +4,7 @@ import { cleanText } from '../shared/sanitize.js';
 import { requireCustomer, envelope } from '../shared/context.js';
 import { db } from '../database/store.js';
 
+// Read-only catalogue: home feed, banners, restaurants, menus, search.
 export async function discoveryRoutes(app: FastifyInstance): Promise<void> {
   app.get('/api/v1/home', async (request) => {
     requireCustomer(request);

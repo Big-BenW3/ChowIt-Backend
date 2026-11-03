@@ -1,3 +1,6 @@
+// In-memory idempotency journal (24h TTL). Same key + same payload replays
+// the original response; same key + different payload is a 409 conflict.
+// This is what makes order/payment retries safe after network timeouts.
 export interface IdempotencyRecord {
   response: unknown;
   requestHash: string;
